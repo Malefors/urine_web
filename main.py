@@ -24,6 +24,7 @@ html_template = """
 </head>
 <body>
     <h1>Sensor Data</h1>
+    <a href="/download/csv" style="margin-bottom: 20px; display: inline-block; background-color: #4CAF50; color: white; padding: 10px; text-decoration: none; border-radius: 5px;">Download CSV</a>
     <table>
         <tr>
             <th>Timestamp</th>
@@ -95,4 +96,4 @@ def download_csv():
 
 
 # Run the Bottle server
-run(app, host='localhost', port=8080)
+run(app, host='localhost', port=8080, debug=True, reloader=True)
