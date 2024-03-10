@@ -1,12 +1,10 @@
-from bottle import Bottle, run, template, response
+from flask import Flask, render_template_string, make_response
 import sqlite3
 from datetime import datetime
 import csv
 import io
 
-
-# Create a Bottle web application instance
-app = Bottle()
+app = Flask(__name__)
 
 # Define HTML template with CSS for the table
 html_template = """
@@ -23,25 +21,25 @@ html_template = """
     </style>
 </head>
 <body>
-    <h1>Sensor Data</h1>
+    <h1>Data</h1>
     <a href="/download/csv" style="margin-bottom: 20px; display: inline-block; background-color: #4CAF50; color: white; padding: 10px; text-decoration: none; border-radius: 5px;">Download CSV</a>
     <table>
         <tr>
             <th>Timestamp</th>
             <th>Value</th>
         </tr>
-        % for row in data:
+        {% for row in data %}
         <tr>
-            <td>{{row[0]}}</td>
-            <td>{{row[1]}}</td>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
         </tr>
-        % end
+        {% endfor %}
     </table>
 </body>
 </html>
 """
 
-@app.route('/data')
+@app.route('/')
 def show_data():
     # Connect to the SQLite database
     conn = sqlite3.connect('sensor_data.db')
@@ -58,7 +56,7 @@ def show_data():
     conn.close()
     
     # Use the template with CSS to display the data
-    return template(html_template, data=formatted_data)
+    return render_template_string(html_template, data=formatted_data)
 
 @app.route('/download/csv')
 def download_csv():
@@ -87,13 +85,11 @@ def download_csv():
     # Seek to start
     output.seek(0)
     
-    # Set headers to download as a file
-    response.content_type = 'text/csv'
-    response.headers['Content-Disposition'] = 'attachment; filename="sensor_data.csv"'
+    # Create a response
+    response = make_response(output.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=sensor_data.csv"
+    response.headers["Content-type"] = "text/csv"
+    return response
 
-    return output.getvalue()
-
-
-
-# Run the Bottle server
-run(app, host='localhost', port=8080, debug=True, reloader=True)
+if __name__ == '__main__':
+    app.run(debug=True)
